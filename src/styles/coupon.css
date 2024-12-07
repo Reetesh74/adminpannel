@@ -1,0 +1,153 @@
+.maxdiCount {
+  display: flex;
+  flex-direction: row;
+}
+
+.manage-coupons {
+  font-family: Arial, sans-serif;
+  max-width: 900px;
+  margin: 20px auto;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.header h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.header p {
+  font-size: 14px;
+  color: #666;
+}
+
+.header a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.header a:hover {
+  text-decoration: underline;
+}
+
+.coupon-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.coupon-info {
+  display: flex;
+  justify-content: space-between;
+}
+
+.coupon-left {
+  display: flex;
+  flex-direction: row;
+}
+
+.coupon-left h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.coupon-code {
+  font-size: 14px;
+  color: #777;
+  margin: 5px 0;
+}
+
+.coupon-title {
+  font-size: 16px;
+  color: #555;
+}
+
+.creator {
+  font-size: 14px;
+  color: #777;
+}
+
+.creator span {
+  color: #007bff;
+}
+
+.validity {
+  font-size: 14px;
+  color: #555;
+}
+
+.usage {
+  font-size: 14px;
+  color: #333;
+}
+
+.status {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.status.expired {
+  color: red;
+  border: 1px solid red;
+  background: #ffe6e6;
+}
+
+.status.active {
+  color: green;
+  border: 1px solid green;
+  background: #e6ffe6;
+}
+
+.toggle-details {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #007bff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.toggle-details:hover {
+  color: #0056b3;
+}
+
+.details-box {
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.details-box p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.coupon-code-section {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid black;
+}
+
+.coupon-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.details-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
