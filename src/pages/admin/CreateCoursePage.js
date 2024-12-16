@@ -54,21 +54,24 @@ const SearchableDropdown = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [newCourseSubtitle, setNewCourseSubtitle] = useState("");
   const [planDetails, setPlanDetails] = useState({
-    name: "",
+    name: "PLAN-SUB-3",
     planType: "",
-    period: "",
+    period: "yearly",
     currency: "INR",
-    interval: null,
+    interval: 0,
     board: "",
     state: "",
     city: "",
+    amount: 0,
+    minAmount: 0,
+    maxAmount: 0,
     standards: [],
     productIds: [],
-    coupon: "",
-    expiryDate: null,
+    expiryDate: "2024-11-30T19:36:42.719+00:00",
+    subtitle: "",
+    coupon: 0,
   });
-  // --------------------option year--------------
-  const [selectedOption, setSelectedOption] = useState(null);
+
   const options = [
     { id: 1, name: "1 year" },
     { id: 2, name: "2 years" },
@@ -152,7 +155,6 @@ const SearchableDropdown = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        
         const [stateData, classData, subjectData, courseData] =
           await Promise.all([
             getStateData("IN"),
@@ -161,7 +163,6 @@ const SearchableDropdown = () => {
             getCourseData(),
           ]);
 
-        
         if (stateData && typeof stateData === "object") {
           const stateNames = Object.keys(stateData);
           setStates(stateNames);
@@ -169,7 +170,6 @@ const SearchableDropdown = () => {
           console.error("State data not found or malformed response");
         }
 
-       
         if (classData && Array.isArray(classData)) {
           setClasses(classData);
         } else {
@@ -297,10 +297,9 @@ const SearchableDropdown = () => {
         board: `${boardName}`,
       };
 
-      const response = await createOrUpdatePlan(updatedPlanDetails);
+      await createOrUpdatePlan(updatedPlanDetails);
     } catch (error) {
       console.error("Error creating/updating the plan:", error);
-      alert("An error occurred while creating/updating the plan.");
     }
   };
 
@@ -406,7 +405,7 @@ const SearchableDropdown = () => {
   };
 
   const [selectedPeriod, setSelectedPeriod] = useState("");
-  const periods = ["Monthly", "Yearly"];
+  const periods = ["monthly", "yearly"];
 
   const handlePeriodChange = (event, value) => {
     setSelectedPeriod(value);
@@ -425,7 +424,6 @@ const SearchableDropdown = () => {
 
   const handleAddClassDialogOpen = () => setIsClassDialogOpen(true);
 
-  // board ------------------------------------------------------
   const [isBoardDialogOpen, setIsBoardDialogOpen] = useState(false);
   const [newBoardName, setNewBoardName] = useState("");
 
@@ -488,31 +486,38 @@ const SearchableDropdown = () => {
           else if (value?.courseId) setSelectedCourse(value);
         }}
         onAddOption={() => setIsCourseDialogOpen(true)}
-        onDeleteOption={(option) => handleDeleteCourse(option.courseId)} // <-- Fixed here
+        onDeleteOption={(option) => handleDeleteCourse(option.courseId)}
         placeholder="Search or Add Course"
         addButtonText="Course"
         getOptionLabel={(option) => option.courseName || ""}
-        customRenderOption={(props, option) => (
-          <Box
-            {...props}
-            display="flex"
-            justifyContent="space-between"
-            width="100%"
-          >
-            <Typography>{option.courseName}</Typography>
-            <Button
-              color="secondary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteCourse(option.courseId);
-              }}
+        customRenderOption={(props, option) => {
+          // Destructure the key from props
+          const { key, ...rest } = props;
+
+          return (
+            <Box
+              key={key} // Pass the key explicitly
+              {...rest} // Spread the remaining props
+              display="flex"
+              justifyContent="space-between"
+              width="100%"
             >
-              Del
-            </Button>
-          </Box>
-        )}
+              <Typography>{option.courseName}</Typography>
+              <Button
+                color="secondary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteCourse(option.courseId);
+                }}
+              >
+                Del
+              </Button>
+            </Box>
+          );
+        }}
       />
+
       <CustomDialog
         open={isCourseDialogOpen}
         onClose={handleDialogClose}
@@ -530,30 +535,30 @@ const SearchableDropdown = () => {
       />
 
       <label>Period</label>
-      <Autocomplete
+      <Dropdown
         options={periods}
-        onChange={handlePeriodChange}
         value={selectedPeriod}
-        className="box-input"
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            placeholder="Select Period"
-            label="Period"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#F8FAFC !important",
-                borderRadius: "8px",
-              },
-            }}
-          />
-        )}
-        renderOption={(props, option) => <li {...props}>{option}</li>}
-        isOptionEqualToValue={(option, value) => option === value}
-      />
+        onChange={handlePeriodChange}
+        placeholder="Search or Add period"
+        getOptionLabel={(option) => option}
+        customRenderOption={(props, option) => {
+          const { key, ...rest } = props;
 
+          return (
+            <Box
+              key={key}
+              {...rest}
+              display="flex"
+              justifyContent="space-between"
+              width="100%"
+            >
+              <Typography>{option}</Typography>
+            </Box>
+          );
+        }}
+      />
       <label>Validity</label>
-      {selectedPeriod === "Yearly" ? (
+      {selectedPeriod === "yearly" ? (
         <div>
           <Dropdown
             options={options}
@@ -566,21 +571,24 @@ const SearchableDropdown = () => {
             getOptionLabel={(option) => option.name}
             isMultiple={false}
           />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              id="expiryDate"
-              value={planDetails.expiryDate}
-              onChange={(newDate) => handleDateChange(newDate)}
-              format="yyyy-MM-dd"
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Select Expiry Date"
-                  fullWidth
-                />
-              )}
-            />
-          </LocalizationProvider>
+          <div>
+            <label>Plan ExpiryDate</label>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                id="expiryDate"
+                value={planDetails.expiryDate}
+                onChange={(newDate) => handleDateChange(newDate)}
+                format="yyyy-MM-dd"
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select Expiry Date"
+                    fullWidth
+                  />
+                )}
+              />
+            </LocalizationProvider>
+          </div>
         </div>
       ) : (
         <Dropdown
@@ -607,12 +615,11 @@ const SearchableDropdown = () => {
           if (value?.id === "add-option") {
             handleAddClassDialogOpen();
           } else if (value?._id) {
-            // Ensure value._id is available before accessing it
             setSelectedClass(value);
             console.log("Vvvvvvvvvvvvvvvvv" + value._id);
             setPlanDetails((prevState) => ({
               ...prevState,
-              standards: [value._id], // Set _id if it's valid
+              standards: [value._id],
             }));
           } else {
             console.warn("Selected value does not contain _id", value);
@@ -622,26 +629,31 @@ const SearchableDropdown = () => {
         onDeleteOption={(option) => handleDeleteClass(option.id)}
         placeholder="Search or Add Class"
         addButtonText="Class"
-        customRenderOption={(props, option) => (
-          <Box
-            {...props} // Spread the required props here
-            display="flex"
-            justifyContent="space-between"
-            width="100%"
-          >
-            <Typography>{option.name}</Typography>
-            <Button
-              color="secondary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDeleteClass(option._id);
-              }}
+        customRenderOption={(props, option) => {
+          const { key, ...restProps } = props;
+
+          return (
+            <Box
+              key={key}
+              {...restProps}
+              display="flex"
+              justifyContent="space-between"
+              width="100%"
             >
-              Del
-            </Button>
-          </Box>
-        )}
+              <Typography>{option.name}</Typography>
+              <Button
+                color="secondary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClass(option._id);
+                }}
+              >
+                Del
+              </Button>
+            </Box>
+          );
+        }}
       />
 
       <label htmlFor="">boards</label>
@@ -649,35 +661,44 @@ const SearchableDropdown = () => {
         options={boards}
         value={selectedBoard}
         onChange={(event, value) => {
-          if (value?.id === "add-option") setIsBoardDialogOpen(true);
-          else if (value?.boardId) setSelectedBoard(value);
+          if (value?.id === "add-option") {
+            setIsBoardDialogOpen(true);
+          } else if (value?.boardId) {
+            setSelectedBoard(value);
+          }
         }}
         onAddOption={() => setIsBoardDialogOpen(true)}
-        placeholder="Search or Add borad"
-        addButtonText="Borad"
+        placeholder="Search or Add Board"
+        addButtonText="Board"
         onDeleteOption={(option) => handleDeleteBoard(option.boardId)}
         getOptionLabel={(option) => option.boardName || ""}
-        customRenderOption={(props, option) => (
-          <Box
-            {...props}
-            display="flex"
-            justifyContent="space-between"
-            width="100%"
-          >
-            <Typography>{option.boardName}</Typography>
-            <Button
-              color="secondary"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log("board id  " + option.boardId);
-                handleDeleteBoard(option.boardId);
-              }}
+        customRenderOption={(props, option) => {
+          // Ensure the `key` is handled properly
+          const { key, ...restProps } = props;
+
+          return (
+            <Box
+              key={key} // Pass key directly here to avoid React warning
+              {...restProps} // Spread the other props
+              display="flex"
+              justifyContent="space-between"
+              width="100%"
             >
-              Del
-            </Button>
-          </Box>
-        )}
+              <Typography>{option.boardName}</Typography>
+              <Button
+                color="secondary"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("board id  " + option.boardId);
+                  handleDeleteBoard(option.boardId);
+                }}
+              >
+                Del
+              </Button>
+            </Box>
+          );
+        }}
       />
 
       <CustomDialog

@@ -56,17 +56,22 @@ const Dropdown = ({
           }}
         />
       )}
-      renderOption={(props, option) =>
-        option.id === "add-option" ? (
-          <Typography {...props} color="primary" fontWeight="bold">
+      renderOption={(props, option) => {
+        // Destructure 'key' and pass it explicitly
+        const { key, ...rest } = props;
+
+        return option.id === "add-option" ? (
+          <Typography key={key} {...rest} color="primary" fontWeight="bold">
             {option.name}
           </Typography>
         ) : customRenderOption ? (
           customRenderOption(props, option)
         ) : (
-          <div {...props}>{getOptionLabel(option)}</div>
-        )
-      }
+          <div key={key} {...rest}>
+            {getOptionLabel(option)}
+          </div>
+        );
+      }}
       isOptionEqualToValue={(option, value) =>
         option.id === value?.id || option.id === value
       }

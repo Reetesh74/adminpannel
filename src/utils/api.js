@@ -155,7 +155,7 @@ export const deleteCourse = async (courseId) => {
 
 export const deleteBoard = async (boardId) => {
   const endpoint = `/board/delete/delete-one`;
- 
+
   const response = await fetchWithAuth(endpoint, {
     method: "DELETE",
     body: JSON.stringify({ _id: boardId }),
@@ -167,4 +167,28 @@ export const getBoardData = async () => {
   const endpoint = `/board/read/get-all-boards-dropdown`;
   const response = await fetchWithAuth(endpoint);
   return handleResponse(response, "Failed to fetch class data");
+};
+
+export const getAllSubscription = async (pageNum, pageSize) => {
+  const endpoint = `/subscription/read/get-all-subscriptions?pageNum=${pageNum}&pageSize=${pageSize}`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch Subscription data");
+};
+
+export const getSubsubscriptionById = async (subcriptionId) => {
+  const endpoint = `/subscription/read/get-subscription-by-id?id=${subcriptionId}`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch Subscription data");
+};
+
+export const getPlansByCourseId = async (courseId) => {
+  const endpoint = `/plan/read/get-all-plans?courseType=${courseId}`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch plan data");
+};
+
+export const getPlansById = async (planId) => {
+  const endpoint = `/plan/read/get?planId=${planId}`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch plan data");
 };
