@@ -55,14 +55,15 @@ const SearchableDropdown = () => {
   const [newCourseSubtitle, setNewCourseSubtitle] = useState("");
   const [planDetails, setPlanDetails] = useState({
     name: "PLAN-SUB-3",
-    planType: "",
+    // courseType: "676032d17b682e1ccd9588f5",
+    courseType: "",
     period: "yearly",
     currency: "INR",
     interval: 0,
     board: "",
     state: "",
     city: "",
-    amount: 0,
+    amount: 1000,
     minAmount: 0,
     maxAmount: 0,
     standards: [],
@@ -181,6 +182,8 @@ const SearchableDropdown = () => {
           const normalizedSubjects = subjectData.map((subject) => ({
             _id: subject._id || Date.now(),
             name: subject.name || "Unnamed Subject",
+            minAmount: subject.minAmount,
+            maxAmount: subject.maxAmount,
           }));
           setSubjects(normalizedSubjects);
         } else {
@@ -242,6 +245,7 @@ const SearchableDropdown = () => {
     };
 
     try {
+      debugger;
       const response = await createOrUpdateStandard(standardDetails);
       if (response) {
         const classData = await getClassData();
@@ -258,11 +262,11 @@ const SearchableDropdown = () => {
   const handleAddNewSubject = async () => {
     if (newSubjectName && newMinAmount && newMaxAmount) {
       try {
-        const response = await addOrUpdateSubject(
-          newSubjectName,
-          newMinAmount,
-          newMaxAmount
-        );
+        const response = await addOrUpdateSubject({
+          name: newSubjectName,
+          minAmount: newMinAmount,
+          maxAmount: newMaxAmount,
+        });
 
         if (response) {
           const newSubject = {
@@ -289,11 +293,13 @@ const SearchableDropdown = () => {
     }
 
     try {
-      const courseName = selectedCourse.courseName;
+      console.log("seleted course ", selectedCourse);
+      const courseName = selectedCourse.courseId;
+      console.log("course name ", courseName);
       const boardName = selectedBoard.boardName;
       const updatedPlanDetails = {
         ...planDetails,
-        planType: `${courseName}`,
+        courseType: `${courseName}`,
         board: `${boardName}`,
       };
 
@@ -450,6 +456,97 @@ const SearchableDropdown = () => {
     }
   };
 
+  // ---------------------------------------------udpatecode-----------------------
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingBoardId, setEditingBoardId] = useState(null);
+  const handleUpdateBoard = async (boardId, updatedBoardName) => {
+    try {
+      const response = await createOrUpdateBoard({
+        _id: boardId,
+        name: updatedBoardName,
+      });
+      setBoards((prevBoards) =>
+        prevBoards.map((board) =>
+          board.boardId === boardId
+            ? { ...board, boardName: updatedBoardName }
+            : board
+        )
+      );
+      console.log("Board updated successfully:", response);
+    } catch (error) {
+      console.error("Error updating board:", error);
+    }
+  };
+
+  // for subject
+  const [editingSubject, setEditingSubject] = useState(null);
+  const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const handleAddOrUpdateSubject = (
+    newSubjectName,
+    newMinAmount,
+    newMaxAmount,
+    editingSubjectId
+  ) => {
+    addOrUpdateSubject({
+      _id: editingSubjectId,
+      name: newSubjectName,
+      minAmount: newMinAmount,
+      maxAmount: newMaxAmount,
+    });
+    getSubjectData();
+  };
+
+  //for class update
+  const [editingClassId, setEditingClassId] = useState(null);
+  const handleAddOrUpdateClass = async (className, classId) => {
+    const classDetails = {
+      _id: classId,
+      name: className,
+      telecrmClassName: className,
+      parent: "classes",
+      isDisabled: false,
+      order: 11,
+    };
+
+    try {
+      const response = await createOrUpdateStandard(classDetails);
+      if (response) {
+        const classData = await getClassData();
+        setClasses(classData);
+        setEditingClassId(null);
+        handleClassDialogClose();
+      } else {
+        console.error("Error creating/updating class.");
+      }
+    } catch (error) {
+      console.error("Error in calling createOrUpdateStandard:", error);
+    }
+  };
+
+  // update course
+  const [editingCourseId, setEditingCourseId] = useState(null);
+  const handleEditCourse = async () => {
+    try {
+      debugger;
+      const updatedCourse = {
+        _id: editingCourseId,
+        name: newCourseName,
+        subtitle: newCourseSubtitle,
+      };
+
+      const response = await createCourse(updatedCourse);
+      if (response) {
+        const data = await getCourseData();
+        setCourses(data.courses);
+        setNewCourseName("");
+        setNewCourseSubtitle("");
+        setIsCourseDialogOpen(false);
+      }
+    } catch (error) {
+      alert("Failed to update course. Please try again.");
+    }
+  };
+
   return (
     <Box
       display="flex"
@@ -461,9 +558,22 @@ const SearchableDropdown = () => {
     >
       <CustomDialog
         open={isBoardDialogOpen}
-        onClose={handleAddBoardDialogClose}
-        onSubmit={handleAddNewBoard}
-        title="Add New Board"
+        onClose={() => {
+          setIsBoardDialogOpen(false);
+          setIsEditing(false);
+          setNewBoardName("");
+        }}
+        onSubmit={() => {
+          if (isEditing) {
+            handleUpdateBoard(editingBoardId, newBoardName);
+          } else {
+            handleAddNewBoard(newBoardName);
+          }
+          setIsBoardDialogOpen(false);
+          setIsEditing(false);
+          setNewBoardName("");
+        }}
+        title={isEditing ? "Edit Board Name" : "Add New Board"}
         fields={[
           {
             label: "Board Name",
@@ -482,47 +592,74 @@ const SearchableDropdown = () => {
         options={courses}
         value={selectedCourse}
         onChange={(event, value) => {
-          if (value?.id === "add-option") setIsCourseDialogOpen(true);
-          else if (value?.courseId) setSelectedCourse(value);
+          if (value?.id === "add-option") {
+            setIsCourseDialogOpen(true);
+          } else if (value?.courseId) setSelectedCourse(value);
         }}
-        onAddOption={() => setIsCourseDialogOpen(true)}
+        onAddOption={() => {
+          setIsCourseDialogOpen(true);
+        }}
         onDeleteOption={(option) => handleDeleteCourse(option.courseId)}
         placeholder="Search or Add Course"
         addButtonText="Course"
         getOptionLabel={(option) => option.courseName || ""}
         customRenderOption={(props, option) => {
-          // Destructure the key from props
           const { key, ...rest } = props;
 
           return (
             <Box
-              key={key} // Pass the key explicitly
-              {...rest} // Spread the remaining props
+              key={key}
+              {...rest}
               display="flex"
               justifyContent="space-between"
               width="100%"
             >
               <Typography>{option.courseName}</Typography>
-              <Button
-                color="secondary"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteCourse(option.courseId);
-                }}
-              >
-                Del
-              </Button>
+              <Box>
+                <Button
+                  color="secondary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCourse(option.courseId);
+                  }}
+                >
+                  Del
+                </Button>
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingCourseId(option.courseId);
+                    setNewCourseName(option.courseName);
+                    console.log("new subtile", option.subtitle);
+                    setNewCourseSubtitle(option.subtitle || "");
+                    setIsCourseDialogOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </Box>
             </Box>
           );
         }}
       />
-
       <CustomDialog
         open={isCourseDialogOpen}
-        onClose={handleDialogClose}
-        onSubmit={handleAddCourse}
-        title="Add New Course"
+        onClose={() => {
+          handleDialogClose();
+          setNewCourseName("");
+          setNewCourseSubtitle("");
+          setEditingCourseId(null);
+        }}
+        onSubmit={() => {
+          if (editingCourseId) {
+            handleEditCourse();
+          } else {
+            handleAddCourse();
+          }
+        }}
+        title={editingCourseId ? "Edit Course" : "Add New Course"}
         fields={[
           { label: "Course Name", name: "courseName", value: newCourseName },
           {
@@ -533,8 +670,7 @@ const SearchableDropdown = () => {
         ]}
         onChange={handleDialogChange}
       />
-
-      <label>Period</label>
+      ;<label>Period</label>
       <Dropdown
         options={periods}
         value={selectedPeriod}
@@ -604,19 +740,15 @@ const SearchableDropdown = () => {
           isMultiple={false}
         />
       )}
-
       <label>Class</label>
       <Dropdown
         options={classes}
         value={selectedClass}
         onChange={(event, value) => {
-          console.log("Selected Value:", value);
-
           if (value?.id === "add-option") {
             handleAddClassDialogOpen();
           } else if (value?._id) {
             setSelectedClass(value);
-            console.log("Vvvvvvvvvvvvvvvvv" + value._id);
             setPlanDetails((prevState) => ({
               ...prevState,
               standards: [value._id],
@@ -641,21 +773,33 @@ const SearchableDropdown = () => {
               width="100%"
             >
               <Typography>{option.name}</Typography>
-              <Button
-                color="secondary"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClass(option._id);
-                }}
-              >
-                Del
-              </Button>
+              <Box>
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsClassDialogOpen(true);
+                    setNewClassName(option.name);
+                    setEditingClassId(option._id);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  color="secondary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClass(option._id);
+                  }}
+                >
+                  Del
+                </Button>
+              </Box>
             </Box>
           );
         }}
       />
-
       <label htmlFor="">boards</label>
       <Dropdown
         options={boards}
@@ -673,45 +817,66 @@ const SearchableDropdown = () => {
         onDeleteOption={(option) => handleDeleteBoard(option.boardId)}
         getOptionLabel={(option) => option.boardName || ""}
         customRenderOption={(props, option) => {
-          // Ensure the `key` is handled properly
           const { key, ...restProps } = props;
 
           return (
             <Box
-              key={key} // Pass key directly here to avoid React warning
-              {...restProps} // Spread the other props
+              key={key}
+              {...restProps}
               display="flex"
               justifyContent="space-between"
               width="100%"
             >
               <Typography>{option.boardName}</Typography>
-              <Button
-                color="secondary"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log("board id  " + option.boardId);
-                  handleDeleteBoard(option.boardId);
-                }}
-              >
-                Del
-              </Button>
+              <Box>
+                <Button
+                  color="primary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditing(true);
+                    setNewBoardName(option.boardName);
+                    setEditingBoardId(option.boardId);
+                    setIsBoardDialogOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  color="secondary"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteBoard(option.boardId);
+                  }}
+                >
+                  Del
+                </Button>
+              </Box>
             </Box>
           );
         }}
       />
-
       <CustomDialog
         open={isClassDialogOpen}
-        onClose={handleDialogClose}
-        onSubmit={handleAddStandard}
-        title="Add New Class"
+        onClose={() => {
+          handleDialogClose();
+          setNewClassName("");
+          setEditingClassId(null);
+        }}
+        onSubmit={() => {
+          if (editingClassId) {
+            handleAddOrUpdateClass(newClassName, editingClassId);
+          } else {
+            handleAddStandard();
+          }
+        }}
+        title={editingClassId ? "Edit Class" : "Add New Class"}
         fields={[
           { label: "Class Name", name: "className", value: newClassName },
         ]}
         onChange={handleDialogChange}
       />
-
       <label>Subjects</label>
       <div className="newSubject">
         <Autocomplete
@@ -752,16 +917,33 @@ const SearchableDropdown = () => {
                 style={{ display: "flex", justifyContent: "space-between" }}
               >
                 <span>{option?.name || "Unnamed Subject"}</span>
-                <Button
-                  color="secondary"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteSubject(option?._id);
-                  }}
-                >
-                  Del
-                </Button>
+                <Box>
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSubjectDialogOpen(true);
+                      setIsEditing(true);
+                      setNewSubjectName(option?.name);
+                      setNewMinAmount(option?.minAmount);
+                      setNewMaxAmount(option?.maxAmount);
+                      console.log("subject idddddd ", option?._id);
+                      setEditingSubjectId(option?._id);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    color="secondary"
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSubject(option?._id);
+                    }}
+                  >
+                    Del
+                  </Button>
+                </Box>
               </li>
             );
           }}
@@ -779,16 +961,35 @@ const SearchableDropdown = () => {
         <CustomDialog
           open={isSubjectDialogOpen}
           onClose={handleDialogClose}
-          onSubmit={handleAddNewSubject}
-          title="Add New Subject"
+          onSubmit={() => {
+            if (editingSubjectId) {
+              handleAddOrUpdateSubject(
+                newSubjectName,
+                newMinAmount,
+                newMaxAmount,
+                editingSubjectId
+              );
+            } else {
+              handleAddNewSubject();
+            }
+          }}
+          title={editingSubject ? "Edit Subject" : "Add New Subject"}
           fields={[
             {
               label: "Subject Name",
               name: "subjectName",
               value: newSubjectName,
             },
-            { label: "Minimum Amount", name: "minAmount", value: newMinAmount },
-            { label: "Maximum Amount", name: "maxAmount", value: newMaxAmount },
+            {
+              label: "Minimum Amount",
+              name: "minAmount",
+              value: newMinAmount,
+            },
+            {
+              label: "Maximum Amount",
+              name: "maxAmount",
+              value: newMaxAmount,
+            },
           ]}
           onChange={handleDialogChange}
         />

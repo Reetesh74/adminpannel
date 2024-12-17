@@ -5,7 +5,7 @@ const getToken = () => localStorage.getItem("authToken");
 
 const fetchWithAuth = async (endpoint, options = {}) => {
   const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzNmM2MyMTYwMjgzMmQ1ZDU5NmM4NmEiLCJyb2xlIjoiQkRBIiwibW9kZXJhdG9yIjpmYWxzZSwiZW1haWwiOiJ0ZXN0LnN0dWRlbnRAZ21haWwuY29tIiwibmFtZSI6IlRlc3QgQkRBIiwiaWF0IjoxNzMzMzExMzkwfQ.qKxXIiRnfIJicN6HB77Pa46r-zY4JVLREy5ueJsiXLs";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzI0ODZjMDA2NmU3ZWUzMzFiZDJhN2UiLCJyb2xlIjoiQkRBIiwibW9kZXJhdG9yIjpmYWxzZSwiZW1haWwiOiJiaXJhZy5ncHRhQGdtYWlsLmNvbSIsIm5hbWUiOiJCaXJhaiIsImlhdCI6MTczMTQzMzkyNH0.wz-zdIPBj5e3YxXZSSzgk6tZmZVb_gNEpHHTsQI_Oh0";
   if (!token) {
     throw new Error("Authorization token is missing");
   }
@@ -77,20 +77,19 @@ export const createOrUpdateStandard = async (standardDetails) => {
   return response;
 };
 
-export const addOrUpdateSubject = async (subjectName, minAmount, maxAmount) => {
+export const addOrUpdateSubject = async (subject) => {
   const endpoint = `/subject/write/insert-or-update`;
+  console.log("ssssssssssssssssssss ", subject);
+
   const response = await fetchWithAuth(endpoint, {
     method: "POST",
-    body: JSON.stringify({
-      name: subjectName,
-      minAmount,
-      maxAmount,
-    }),
+    body: JSON.stringify(subject),
   });
   return handleResponse(response, "Failed to create or update subject");
 };
 
 export const createOrUpdatePlan = async (planDetails) => {
+  console.log("plandetails", planDetails);
   const endpoint = `/plan/write/create-or-update`;
   const response = await fetchWithAuth(endpoint, {
     method: "POST",
@@ -127,6 +126,7 @@ export const getCourseData = async () => {
 
 export const createCourse = async (mapPaymentIdEnrollment) => {
   const endpoint = `/course/write/create-or-update`;
+  console.log("course ", mapPaymentIdEnrollment);
   const response = await fetchWithAuth(endpoint, {
     method: "POST",
     body: JSON.stringify(mapPaymentIdEnrollment),
