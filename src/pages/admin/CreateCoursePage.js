@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dropdown from "../../components/Dropdown";
 import CustomDialog from "../../components/CustomDialog";
+import Input from "../../components/Input";
 
 import {
   Autocomplete,
@@ -53,9 +54,11 @@ const SearchableDropdown = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [newCourseSubtitle, setNewCourseSubtitle] = useState("");
+  const [givenMinAmount, setgivenMinAmount] = useState(0);
+  const [givenMaxAmount, setgivenMaxAmount] = useState(0);
+  const [givenAmount, setGivenamount] = useState(0);
   const [planDetails, setPlanDetails] = useState({
     name: "PLAN-SUB-3",
-    // courseType: "676032d17b682e1ccd9588f5",
     courseType: "",
     period: "yearly",
     currency: "INR",
@@ -63,7 +66,7 @@ const SearchableDropdown = () => {
     board: "",
     state: "",
     city: "",
-    amount: 1000,
+    amount: 0,
     minAmount: 0,
     maxAmount: 0,
     standards: [],
@@ -293,14 +296,19 @@ const SearchableDropdown = () => {
     }
 
     try {
-      console.log("seleted course ", selectedCourse);
       const courseName = selectedCourse.courseId;
-      console.log("course name ", courseName);
+
       const boardName = selectedBoard.boardName;
+      console.log("Amount ", typeof Number(givenAmount));
+      console.log("givenMinAmount ", givenMinAmount);
+      console.log("givenMaxAmount ", givenMaxAmount);
       const updatedPlanDetails = {
         ...planDetails,
         courseType: `${courseName}`,
         board: `${boardName}`,
+        amount: Number(givenAmount),
+        minAmount: Number(givenMinAmount),
+        maxAmount: Number(givenMaxAmount),
       };
 
       await createOrUpdatePlan(updatedPlanDetails);
@@ -670,7 +678,7 @@ const SearchableDropdown = () => {
         ]}
         onChange={handleDialogChange}
       />
-      ;<label>Period</label>
+      <label>Period</label>
       <Dropdown
         options={periods}
         value={selectedPeriod}
@@ -1003,6 +1011,36 @@ const SearchableDropdown = () => {
         addButtonText="State"
         getOptionLabel={(option) => option || ""}
       />
+      {selectedPeriod === "yearly" && (
+        <div>
+          <div>
+            <label htmlFor="">Fix Amount</label>
+            <Input
+              value={givenAmount}
+              onChange={setGivenamount}
+              placeholder="Enter Fix Amount"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="">Min Amount</label>
+            <Input
+              value={givenMinAmount}
+              onChange={setgivenMinAmount}
+              placeholder="Enter Min Amount"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="">Max Amount</label>
+            <Input
+              value={givenMaxAmount}
+              onChange={setgivenMaxAmount}
+              placeholder="Enter Max Amount"
+            />
+          </div>
+        </div>
+      )}
       <Button
         variant="contained"
         color="primary"
