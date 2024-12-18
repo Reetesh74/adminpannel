@@ -6,6 +6,8 @@ import {
   DialogActions,
   TextField,
   Button,
+  Autocomplete,
+  FormControl,
 } from "@mui/material";
 
 const CustomDialog = ({
@@ -21,18 +23,47 @@ const CustomDialog = ({
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        {fields.map((field, index) => (
-          <TextField
-            key={index}
-            autoFocus
-            margin="dense"
-            label={field.label}
-            type={field.type || "text"}
-            fullWidth
-            value={field.value}
-            onChange={(e) => onChange(field.name, e.target.value)}
-          />
-        ))}
+        {fields.map((field) => {
+          if (field.type === "autocomplete") {
+            return (
+              <FormControl key={field.name} fullWidth margin="dense">
+                <Autocomplete
+                  multiple
+                  options={field.options || []}
+                  getOptionLabel={(option) => option.name || ""}
+                  isOptionEqualToValue={(option, value) => {
+                    return option._id === value._id;
+                  }}
+                  value={field.value || []}
+                  onChange={(e, newValue) => { 
+                    onChange(field.name, newValue);
+                  }}
+                  renderInput={(params) => (
+                    <TextField {...params} label={field.label} margin="dense" />
+                  )}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option._id}>
+                      {option.name}
+                    </li>
+                  )}
+                />
+              </FormControl>
+            );
+          }
+
+          return (
+            <TextField
+              key={field.name}
+              autoFocus={field.name === fields[0].name}
+              margin="dense"
+              label={field.label}
+              type={field.type || "text"}
+              fullWidth
+              value={field.value || ""}
+              onChange={(e) => onChange(field.name, e.target.value)}
+            />
+          );
+        })}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">

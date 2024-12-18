@@ -192,3 +192,11 @@ export const getPlansById = async (planId) => {
   const response = await fetchWithAuth(endpoint);
   return handleResponse(response, "Failed to fetch plan data");
 };
+
+
+export const getSubjectById = async (courseId) => {
+  console.log("All Subject id ",courseId)
+  const endpoint = `/course/read/get?courseId=${courseId}`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch Subscription data");
+};

@@ -31,6 +31,7 @@ import {
   deleteBoard,
   deleteCourse,
   getBoardData,
+  getSubjectById,
 } from "../../utils/api";
 
 const SearchableDropdown = () => {
@@ -54,9 +55,11 @@ const SearchableDropdown = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [newCourseSubtitle, setNewCourseSubtitle] = useState("");
+  const [courseSubject, setCourseSubject] = useState([]);
   const [givenMinAmount, setgivenMinAmount] = useState(0);
   const [givenMaxAmount, setgivenMaxAmount] = useState(0);
   const [givenAmount, setGivenamount] = useState(0);
+  const [subjectByCourseId, setSubjectByCourseId] = useState([]);
   const [planDetails, setPlanDetails] = useState({
     name: "PLAN-SUB-3",
     courseType: "",
@@ -159,38 +162,63 @@ const SearchableDropdown = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [stateData, classData, subjectData, courseData] =
-          await Promise.all([
-            getStateData("IN"),
-            getClassData(),
-            getSubjectData(),
-            getCourseData(),
-          ]);
+        if (selectedCourse) {
+          const subjectDataById = await getSubjectById(selectedCourse.courseId);
+          if (subjectDataById && Array.isArray(subjectDataById.subjects)) {
+            const normalizedSubjects = subjectDataById.subjects.map(
+              (subject) => ({
+                _id: subject._id || Date.now(),
+                name: subject.name || "Unnamed Subject",
+                minAmount: subject.minAmount,
+                maxAmount: subject.maxAmount,
+              })
+            );
 
-        if (stateData && typeof stateData === "object") {
-          const stateNames = Object.keys(stateData);
-          setStates(stateNames);
+            setSubjectByCourseId(normalizedSubjects);
+          } else {
+            console.error("Subject data not found or malformed response");
+          }
         } else {
-          console.error("State data not found or malformed response");
-        }
+          const [stateData, classData, subjectData, courseData] =
+            await Promise.all([
+              getStateData("IN"),
+              getClassData(),
+              getSubjectData(),
+              getCourseData(),
+            ]);
+          const normalizedSubjects = [
+            {
+              _id: "default",
+              name: "First select course",
+              minAmount: null,
+              maxAmount: null,
+            },
+          ];
+          setSubjectByCourseId(normalizedSubjects);
+          if (stateData && typeof stateData === "object") {
+            const stateNames = Object.keys(stateData);
+            setStates(stateNames);
+          } else {
+            console.error("State data not found or malformed response");
+          }
 
-        if (classData && Array.isArray(classData)) {
-          setClasses(classData);
-        } else {
-          console.error("Class data is not in the expected format");
-        }
+          if (classData && Array.isArray(classData)) {
+            setClasses(classData);
+          } else {
+            console.error("Class data is not in the expected format");
+          }
 
-        // Handle subject data
-        if (subjectData && Array.isArray(subjectData)) {
-          const normalizedSubjects = subjectData.map((subject) => ({
-            _id: subject._id || Date.now(),
-            name: subject.name || "Unnamed Subject",
-            minAmount: subject.minAmount,
-            maxAmount: subject.maxAmount,
-          }));
-          setSubjects(normalizedSubjects);
-        } else {
-          console.error("Subject data not found or malformed response");
+          if (subjectData && Array.isArray(subjectData)) {
+            const normalizedSubjects = subjectData.map((subject) => ({
+              _id: subject._id || Date.now(),
+              name: subject.name || "Unnamed Subject",
+              minAmount: subject.minAmount,
+              maxAmount: subject.maxAmount,
+            }));
+            setSubjects(normalizedSubjects);
+          } else {
+            console.error("Subject data not found or malformed response");
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -198,7 +226,7 @@ const SearchableDropdown = () => {
     };
 
     fetchData();
-  }, []);
+  }, [selectedCourse]);
 
   const handleDeleteSubject = async (subjectId) => {
     try {
@@ -248,7 +276,6 @@ const SearchableDropdown = () => {
     };
 
     try {
-      debugger;
       const response = await createOrUpdateStandard(standardDetails);
       if (response) {
         const classData = await getClassData();
@@ -297,11 +324,10 @@ const SearchableDropdown = () => {
 
     try {
       const courseName = selectedCourse.courseId;
+      console.log("course id ", selectedCourse.courseId);
 
       const boardName = selectedBoard.boardName;
-      console.log("Amount ", typeof Number(givenAmount));
-      console.log("givenMinAmount ", givenMinAmount);
-      console.log("givenMaxAmount ", givenMaxAmount);
+
       const updatedPlanDetails = {
         ...planDetails,
         courseType: `${courseName}`,
@@ -341,6 +367,9 @@ const SearchableDropdown = () => {
         break;
       case "courseSubtitle":
         setNewCourseSubtitle(value);
+        break;
+      case "selectedCourse":
+        setCourseSubject(value);
         break;
       case "subjectName":
         setNewSubjectName(value);
@@ -397,7 +426,11 @@ const SearchableDropdown = () => {
   const handleAddCourse = async () => {
     if (newCourseName.trim() && newCourseSubtitle.trim()) {
       try {
+        console.log("ffffffffffffffffff    ssss ", courseSubject);
+        // debugger
+        const productIds = courseSubject.map((subject) => subject._id);
         const response = await createCourse({
+          productIds: productIds,
           name: newCourseName,
           subtitle: newCourseSubtitle,
         });
@@ -535,7 +568,6 @@ const SearchableDropdown = () => {
   const [editingCourseId, setEditingCourseId] = useState(null);
   const handleEditCourse = async () => {
     try {
-      debugger;
       const updatedCourse = {
         _id: editingCourseId,
         name: newCourseName,
@@ -674,6 +706,13 @@ const SearchableDropdown = () => {
             label: "Course Subtitle",
             name: "courseSubtitle",
             value: newCourseSubtitle,
+          },
+          {
+            label: "Select Subject",
+            name: "selectedCourse",
+            type: "autocomplete",
+            value: courseSubject,
+            options: Array.isArray(subjects) ? subjects : [],
           },
         ]}
         onChange={handleDialogChange}
@@ -890,7 +929,7 @@ const SearchableDropdown = () => {
         <Autocomplete
           multiple
           value={Array.isArray(selectedSubject) ? selectedSubject : []}
-          options={Array.isArray(subjects) ? subjects : []}
+          options={Array.isArray(subjectByCourseId) ? subjectByCourseId : []}
           onChange={(event, value) => {
             setSelectedSubject(Array.isArray(value) ? value : []);
 
@@ -925,33 +964,35 @@ const SearchableDropdown = () => {
                 style={{ display: "flex", justifyContent: "space-between" }}
               >
                 <span>{option?.name || "Unnamed Subject"}</span>
-                <Box>
-                  <Button
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsSubjectDialogOpen(true);
-                      setIsEditing(true);
-                      setNewSubjectName(option?.name);
-                      setNewMinAmount(option?.minAmount);
-                      setNewMaxAmount(option?.maxAmount);
-                      console.log("subject idddddd ", option?._id);
-                      setEditingSubjectId(option?._id);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    color="secondary"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteSubject(option?._id);
-                    }}
-                  >
-                    Del
-                  </Button>
-                </Box>
+                {selectedCourse && (
+                  <Box>
+                    <Button
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSubjectDialogOpen(true);
+                        setIsEditing(true);
+                        setNewSubjectName(option?.name);
+                        setNewMinAmount(option?.minAmount);
+                        setNewMaxAmount(option?.maxAmount);
+                        console.log("subject idddddd ", option?._id);
+                        setEditingSubjectId(option?._id);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      color="secondary"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSubject(option?._id);
+                      }}
+                    >
+                      Del
+                    </Button>
+                  </Box>
+                )}
               </li>
             );
           }}
