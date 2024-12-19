@@ -14,22 +14,20 @@ const Dropdown = ({
 }) => {
   return (
     <Autocomplete
-      multiple={isMultiple} // Enable multiple selection
+      multiple={isMultiple}
       options={[
         ...options,
         onAddOption ? { id: "add-option", name: `+ ${addButtonText}` } : null,
       ].filter(Boolean)}
-      value={value} // Correctly handle the array of selected options
+      value={value}
       onChange={(event, selectedValues) => {
         if (Array.isArray(selectedValues)) {
-          // Check if the "Add" option is selected
           const addOptionSelected = selectedValues.some(
             (item) => item.id === "add-option"
           );
           if (addOptionSelected) {
-            // Call the add option function if provided
             onAddOption && onAddOption();
-            // Remove the "Add" option from the selection
+
             onChange &&
               onChange(
                 event,
@@ -57,7 +55,6 @@ const Dropdown = ({
         />
       )}
       renderOption={(props, option) => {
-        // Destructure 'key' and pass it explicitly
         const { key, ...rest } = props;
 
         return option.id === "add-option" ? (

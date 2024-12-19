@@ -193,10 +193,24 @@ export const getPlansById = async (planId) => {
   return handleResponse(response, "Failed to fetch plan data");
 };
 
-
 export const getSubjectById = async (courseId) => {
-  console.log("All Subject id ",courseId)
   const endpoint = `/course/read/get?courseId=${courseId}`;
   const response = await fetchWithAuth(endpoint);
   return handleResponse(response, "Failed to fetch Subscription data");
+};
+
+export const getYearData = async () => {
+  const endpoint = `/constant/read/get?constantType=yearCrud`;
+  const response = await fetchWithAuth(endpoint);
+  return handleResponse(response, "Failed to fetch Subscription data");
+};
+
+export const createYeardata = async (createYear) => {
+  const endpoint = `/constant/write/create-or-update`;
+  console.log("create year ", createYear);
+  const response = await fetchWithAuth(endpoint, {
+    method: "POST",
+    body: JSON.stringify(createYear),
+  });
+  return handleResponse(response, "Failed to create or update plan");
 };

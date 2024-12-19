@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Dropdown from "../../components/Dropdown";
 import CustomDialog from "../../components/CustomDialog";
 import Input from "../../components/Input";
+import Year from "../../components/planComponent/Year";
 
 import {
   Autocomplete,
@@ -173,7 +174,6 @@ const SearchableDropdown = () => {
                 maxAmount: subject.maxAmount,
               })
             );
-
             setSubjectByCourseId(normalizedSubjects);
           } else {
             console.error("Subject data not found or malformed response");
@@ -327,7 +327,7 @@ const SearchableDropdown = () => {
       console.log("course id ", selectedCourse.courseId);
 
       const boardName = selectedBoard.boardName;
-
+      console.log("selectedYear", selectedYear);
       const updatedPlanDetails = {
         ...planDetails,
         courseType: `${courseName}`,
@@ -335,6 +335,7 @@ const SearchableDropdown = () => {
         amount: Number(givenAmount),
         minAmount: Number(givenMinAmount),
         maxAmount: Number(givenMaxAmount),
+        interval: selectedYear,
       };
 
       await createOrUpdatePlan(updatedPlanDetails);
@@ -587,6 +588,13 @@ const SearchableDropdown = () => {
     }
   };
 
+  // -----------------------------------------------for year----------------------------------------------
+  const [selectedYear, setSelectedYear] = useState(null);
+  const handleYearChange = (selectedYear) => {
+    setSelectedYear(selectedYear);
+    console.log("Selected Year in Parent: ", selectedYear);
+  };
+
   return (
     <Box
       display="flex"
@@ -743,17 +751,7 @@ const SearchableDropdown = () => {
       <label>Validity</label>
       {selectedPeriod === "yearly" ? (
         <div>
-          <Dropdown
-            options={options}
-            value={
-              options.find((option) => option.id === planDetails.interval) ||
-              null
-            }
-            onChange={handleIntervalChange}
-            placeholder="Select Interval"
-            getOptionLabel={(option) => option.name}
-            isMultiple={false}
-          />
+          <Year onYearChange={handleYearChange} />
           <div>
             <label>Plan ExpiryDate</label>
             <LocalizationProvider dateAdapter={AdapterDateFns}>

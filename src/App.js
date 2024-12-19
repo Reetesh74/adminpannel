@@ -7,6 +7,7 @@ import CouponPage from "./pages/coupon/couponPage";
 import CouponDetail from "./pages/coupon/couponDetail";
 import SubscriptionPage from "./pages/admin/SubscriptionPage";
 import PlanPage from "./pages/admin/PlanPage";
+import Year from "./components/planComponent/Year";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/plans-page" element={<PlanPage />} />
         <Route path="/create-coupon" element={<CouponPage />} />
         <Route path="/details-coupon" element={<CouponDetail />} />
+        <Route path="/year-date" element={<Year />} />
       </Routes>
     </Router>
   );

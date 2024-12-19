@@ -8,6 +8,7 @@ import {
   Button,
   Autocomplete,
   FormControl,
+  Typography,
 } from "@mui/material";
 
 const CustomDialog = ({
@@ -18,10 +19,13 @@ const CustomDialog = ({
   fields,
   onChange,
   isLoading,
+  message,
 }) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>{title}</DialogTitle>
+      {/* <DialogTitle>{message}</DialogTitle> */}
+      {/* <Typography>message</Typography> */}
       <DialogContent>
         {fields.map((field) => {
           if (field.type === "autocomplete") {
@@ -35,7 +39,7 @@ const CustomDialog = ({
                     return option._id === value._id;
                   }}
                   value={field.value || []}
-                  onChange={(e, newValue) => { 
+                  onChange={(e, newValue) => {
                     onChange(field.name, newValue);
                   }}
                   renderInput={(params) => (
@@ -52,16 +56,18 @@ const CustomDialog = ({
           }
 
           return (
-            <TextField
-              key={field.name}
-              autoFocus={field.name === fields[0].name}
-              margin="dense"
-              label={field.label}
-              type={field.type || "text"}
-              fullWidth
-              value={field.value || ""}
-              onChange={(e) => onChange(field.name, e.target.value)}
-            />
+            <React.Fragment key={field.name}>
+              {message && <Typography>{message}</Typography>}
+              <TextField
+                autoFocus={field.name === fields[0].name}
+                margin="dense"
+                label={field.label}
+                type={field.type || "text"}
+                fullWidth
+                value={field.value || ""}
+                onChange={(e) => onChange(field.name, e.target.value)}
+              />
+            </React.Fragment>
           );
         })}
       </DialogContent>
