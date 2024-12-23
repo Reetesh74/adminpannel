@@ -79,8 +79,7 @@ export const createOrUpdateStandard = async (standardDetails) => {
 
 export const addOrUpdateSubject = async (subject) => {
   const endpoint = `/subject/write/insert-or-update`;
-  console.log("ssssssssssssssssssss ", subject);
-
+  
   const response = await fetchWithAuth(endpoint, {
     method: "POST",
     body: JSON.stringify(subject),

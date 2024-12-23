@@ -80,10 +80,6 @@ const SearchableDropdown = () => {
     coupon: 0,
   });
 
-  const options = [
-    { id: 1, name: "1 year" },
-    { id: 2, name: "2 years" },
-  ];
   const monthlyOption = [
     { id: 1, name: "Weekly" },
     { id: 2, name: "Monthly" },
@@ -101,7 +97,6 @@ const SearchableDropdown = () => {
     try {
       const response = await deleteStandard(classId);
       if (response.status === 200) {
-        alert("Class deleted successfully.");
         setClasses((prevClasses) => {
           const updatedClasses = prevClasses.filter(
             (cls) => cls._id !== classId
@@ -121,7 +116,6 @@ const SearchableDropdown = () => {
     try {
       const response = await deleteBoard(boardId);
       if (response.status === 200) {
-        alert("Class deleted successfully.");
         setBoards((prevBoards) => {
           const updatedBoards = prevBoards.filter((c) => c.boardId !== boardId);
           console.log("Updated Board after deletion:", updatedBoards);
@@ -142,7 +136,6 @@ const SearchableDropdown = () => {
       const response = await deleteCourse(courseId);
 
       if (response.status === 200) {
-        alert("Course deleted successfully.");
         setCourses((prevCourses) => {
           console.log("Current courses before deletion:", prevCourses);
           const updatedCourses = prevCourses.filter(
@@ -427,8 +420,6 @@ const SearchableDropdown = () => {
   const handleAddCourse = async () => {
     if (newCourseName.trim() && newCourseSubtitle.trim()) {
       try {
-        console.log("ffffffffffffffffff    ssss ", courseSubject);
-        // debugger
         const productIds = courseSubject.map((subject) => subject._id);
         const response = await createCourse({
           productIds: productIds,

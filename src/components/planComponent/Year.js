@@ -38,12 +38,12 @@ const Year = ({ onYearChange }) => {
     };
 
     fetchYearData();
-  }, [yearData]);
+    // }, [yearData]);
+  }, []);
 
   const handleDropdownChange = (event, selectedValues) => {
     setSelectedYear(selectedValues);
     if (selectedValues && selectedValues.isActive) {
-      // debugger;
       console.log("parent compont", selectedValues.value);
       onYearChange(selectedValues.value);
     }
