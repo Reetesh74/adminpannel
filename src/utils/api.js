@@ -79,7 +79,7 @@ export const createOrUpdateStandard = async (standardDetails) => {
 
 export const addOrUpdateSubject = async (subject) => {
   const endpoint = `/subject/write/insert-or-update`;
-  
+
   const response = await fetchWithAuth(endpoint, {
     method: "POST",
     body: JSON.stringify(subject),
@@ -181,8 +181,15 @@ export const getSubsubscriptionById = async (subcriptionId) => {
 };
 
 export const getPlansByCourseId = async (courseId) => {
-  const endpoint = `/plan/read/get-all-plans?courseType=${courseId}`;
+  // const endpoint = `/plan/read/get-all-plans?courseType=${courseId}`;
+  // debugger;
+  const endpoint = courseId
+    ? `/plan/read/get-all-plans?courseType=${courseId}`
+    : `/plan/read/get-all-plans`;
+
+  console.log("endpoint", endpoint);
   const response = await fetchWithAuth(endpoint);
+  console.log("response", response);
   return handleResponse(response, "Failed to fetch plan data");
 };
 

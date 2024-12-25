@@ -3,7 +3,7 @@ import Dropdown from "../../components/Dropdown";
 import CustomDialog from "../../components/CustomDialog";
 import Input from "../../components/Input";
 import Year from "../../components/planComponent/Year";
-
+import AddSubject from "../../components/planComponent/AddSubject";
 import {
   Autocomplete,
   TextField,
@@ -282,33 +282,6 @@ const SearchableDropdown = () => {
     }
   };
 
-  const handleAddNewSubject = async () => {
-    if (newSubjectName && newMinAmount && newMaxAmount) {
-      try {
-        const response = await addOrUpdateSubject({
-          name: newSubjectName,
-          minAmount: newMinAmount,
-          maxAmount: newMaxAmount,
-        });
-
-        if (response) {
-          const newSubject = {
-            _id: response.id || Date.now(),
-            name: newSubjectName,
-          };
-
-          setSubjects((prevSubjects) => [...prevSubjects, newSubject]);
-          setSelectedSubject(newSubject);
-          handleDialogClose("subject");
-        }
-      } catch (error) {
-        alert("Failed to add subject. Please try again.");
-      }
-    } else {
-      alert("Please fill all fields.");
-    }
-  };
-
   const handleAddPlan = async () => {
     if (!selectedCourse || !selectedCourse.courseName) {
       alert("Please select a course before submitting the plan.");
@@ -511,8 +484,6 @@ const SearchableDropdown = () => {
     }
   };
 
-  // for subject
-  const [editingSubject, setEditingSubject] = useState(null);
   const [editingSubjectId, setEditingSubjectId] = useState(null);
   const handleAddOrUpdateSubject = (
     newSubjectName,
@@ -529,7 +500,6 @@ const SearchableDropdown = () => {
     getSubjectData();
   };
 
-  //for class update
   const [editingClassId, setEditingClassId] = useState(null);
   const handleAddOrUpdateClass = async (className, classId) => {
     const classDetails = {
@@ -961,15 +931,16 @@ const SearchableDropdown = () => {
                         e.stopPropagation();
                         setIsSubjectDialogOpen(true);
                         setIsEditing(true);
-                        setNewSubjectName(option?.name);
-                        setNewMinAmount(option?.minAmount);
-                        setNewMaxAmount(option?.maxAmount);
-                        console.log("subject idddddd ", option?._id);
+                        setNewSubjectName(option?.name || "");
+                        setNewMinAmount(option?.minAmount || "");
+                        setNewMaxAmount(option?.maxAmount || "");
                         setEditingSubjectId(option?._id);
+                        console.log("Editing subject ID:", option?._id);
                       }}
                     >
                       Edit
                     </Button>
+
                     <Button
                       color="secondary"
                       size="small"
@@ -996,41 +967,24 @@ const SearchableDropdown = () => {
           Add Subject
         </Button>
 
-        <CustomDialog
-          open={isSubjectDialogOpen}
-          onClose={handleDialogClose}
-          onSubmit={() => {
-            if (editingSubjectId) {
-              handleAddOrUpdateSubject(
-                newSubjectName,
-                newMinAmount,
-                newMaxAmount,
-                editingSubjectId
-              );
-            } else {
-              handleAddNewSubject();
-            }
-          }}
-          title={editingSubject ? "Edit Subject" : "Add New Subject"}
-          fields={[
-            {
-              label: "Subject Name",
-              name: "subjectName",
-              value: newSubjectName,
-            },
-            {
-              label: "Minimum Amount",
-              name: "minAmount",
-              value: newMinAmount,
-            },
-            {
-              label: "Maximum Amount",
-              name: "maxAmount",
-              value: newMaxAmount,
-            },
-          ]}
-          onChange={handleDialogChange}
-        />
+        {isSubjectDialogOpen && (
+          <AddSubject
+            isSubjectDialogOpen={isSubjectDialogOpen}
+            handleDialogClose={handleDialogClose}
+            handleAddOrUpdateSubject={handleAddOrUpdateSubject}
+            subjects={subjects}
+            setSubjects={setSubjects}
+            selectedSubject={selectedSubject}
+            setSelectedSubject={setSelectedSubject}
+            editingSubjectId={editingSubjectId}
+            editingSubject={{
+              name: newSubjectName,
+              minAmount: newMinAmount,
+              maxAmount: newMaxAmount,
+            }}
+            classes={classes}
+          />
+        )}
       </div>
       <label>State</label>
       <Dropdown

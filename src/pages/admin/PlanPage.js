@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, colors, Typography } from "@mui/material";
 import Dropdown from "../../components/Dropdown";
 import Table from "../../components/Table";
 import Input from "../../components/Input";
@@ -21,11 +21,13 @@ function PlanPage() {
   const [planId, setPlanId] = useState("");
 
   const handleCourseChange = async (event, value) => {
+    console.log("fff", value);
     setSelectedCourse(value);
     if (value?.courseId) {
       await fetchPlans(value.courseId);
     }
   };
+
   const handlePlanByIdClick = async () => {
     try {
       const response = await getPlansById(planId);
@@ -175,6 +177,22 @@ function PlanPage() {
     }
   };
 
+  const tableStyles = { border: "1px solid #E2E8F0", borderRadius: "10px" };
+  const rowStyles = {
+    "&:nth-of-type(even)": { backgroundColor: "#FEF4FF" },
+    "&:nth-of-type(odd)": {
+      backgroundColor: "#FFFFFF", // Red for odd rows
+    },
+  };
+  const cellStyles = {
+    // fontSize: "16px",
+    // fontWeight: "bold",
+  };
+  const dynamicHeaderStyles = {
+    backgroundColor: "#E2E8F0", // Dynamic background color
+    fontWeight: "bold", // Example of additional styling
+  };
+
   if (error) return <p>Error: {error}</p>;
   return (
     <div>
@@ -206,7 +224,14 @@ function PlanPage() {
 
       <h1>Plans List</h1>
       {tableData.length > 0 ? (
-        <Table headers={headers} data={tableData} />
+        <Table
+          headers={headers}
+          data={tableData}
+          tableStyles={tableStyles}
+          rowStyles={rowStyles}
+          cellStyles={cellStyles}
+          headerStyles={dynamicHeaderStyles}
+        />
       ) : (
         <p>No Plan Available</p>
       )}
